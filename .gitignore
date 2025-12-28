@@ -1,0 +1,244 @@
+# =============================================================================
+# RETROLOGIN WORDPRESS PLUGIN - .gitignore
+# =============================================================================
+# Files and directories that should NOT be committed to version control
+# =============================================================================
+
+# =============================================================================
+# 1. OPERATING SYSTEM FILES
+# =============================================================================
+.DS_Store
+Thumbs.db
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+*.swp
+*.swo
+*~
+.fuse_hidden*
+.disklabel*
+.NSReverseDisk
+
+# =============================================================================
+# 2. EDITOR AND IDE FILES
+# =============================================================================
+.idea/
+.vscode/
+*.swp
+*.swo
+*.tmp
+*.temp
+*.bak
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+.attachments/
+.browserslistrc
+.editorconfig
+.eslintcache
+
+# =============================================================================
+# 3. DEPENDENCIES (ALWAYS EXCLUDE)
+# =============================================================================
+vendor/
+node_modules/
+bower_components/
+
+# =============================================================================
+# 4. BUILD OUTPUTS AND CACHES
+# =============================================================================
+dist/autoload/           # PHP-Scoper scoped dependencies
+.phpunit.cache/
+.phpcs-cache/
+.phpstan/cache/
+.cache/
+.cache-rfc7234
+coverage/
+nyc_output/
+.parcel-cache/
+.eslintcache
+stylelintcache
+
+# =============================================================================
+# 5. LOG FILES AND TEMPORARY FILES
+# =============================================================================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.sql
+*.sqlite
+*.db
+*.tmp
+*.temp
+*.swp
+*.swo
+wp-config.local.php
+wp-cli.local.yml
+wp-cli.distro.yml
+
+# =============================================================================
+# 6. LOCAL ENVIRONMENT FILES
+# =============================================================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+*.local
+.local.ini
+.phpunit.xml
+.phpunit.xml.dist
+phpstan.neon
+phpstan.neon.dist
+phpcs.xml
+phpcs.xml.dist
+.scoper.inc.php
+
+# =============================================================================
+# 7. TESTING FILES
+# =============================================================================
+wp-tests-config.php
+tests/_output/
+tests/_data/
+tests/_support/_generated/
+
+# =============================================================================
+# 8. NODE.JS / NPM
+# =============================================================================
+node_modules/
+npm-debug.log*
+yarn-error.log*
+yarn.lock
+.pnp
+.pnp.js
+.yarn-integrity
+
+# =============================================================================
+# 9. COMPOSER
+# =============================================================================
+composer.lock
+/vendor/autoindex/**    # Prevent auto-generated index files
+/vendor/package/        # Some packages create this
+
+# =============================================================================
+# 10. PACKAGE MANAGERS (General)
+# =============================================================================
+.bower_components/
+npm-debug.log
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# =============================================================================
+# 11. DEVELOPMENT TOOLS
+# =============================================================================
+.phpintel/
+.rubocop*
+.vendor/
+.pub/
+.tox/
+.coverage
+.coveralls.yml
+.phpdoc/
+docs/_build/
+docs/.doctrees/
+
+# =============================================================================
+# 12. SYSTEM FILES (Linux/Unix)
+# =============================================================================
+*~.nfs*
+.nfs*
+.lock
+.lock-wscript
+
+# =============================================================================
+# 13. WINDOWS FILES
+# =============================================================================
+*.lnk
+$Recycle.Bin/
+System Volume Information/
+AppData/
+LocalAppData/
+Cookies/
+History/
+NetHood/
+Personal/
+PrintHood/
+Recent/
+SendTo/
+Start Menu/
+Templates/
+
+# =============================================================================
+# 14. BACKUP FILES
+# =============================================================================
+*.backup
+*.back
+*_bak
+*.orig
+*.rej
+*.patch
+
+# =============================================================================
+# 15. WORDPRESS SPECIFIC (EXCLUDE CORE)
+# =============================================================================
+wp-content/
+wp-admin/
+wp-includes/
+!retrologin.php          # KEEP - Main plugin file
+!uninstall.php           # KEEP - Uninstall handler
+!src/                    # KEEP - Source files
+!inc/                     # KEEP - Includes
+!app/                     # KEEP - Autoloaded classes
+
+# =============================================================================
+# 16. DISTRIBUTION FILES (AUTO-GENERATED)
+# =============================================================================
+retrologin.zip          # Generated by composer run zip
+
+# =============================================================================
+# 17. KEEP THESE FILES (EXPLICIT NEGATIONS)
+# =============================================================================
+# These files should ALWAYS be committed:
+!retrologin.php
+!uninstall.php
+!composer.json
+!package.json          # Needed for reproducible builds
+!AGENTS.md            # Factory configuration
+!.gitignore
+!.editorconfig
+!.eslintrc
+
+# =============================================================================
+# 18. DIRECTORY STRUCTURE TO KEEP
+# =============================================================================
+!/app/
+!/inc/
+!/src/
+!/templates/
+!/dist/assets/        # Compiled assets
+!.factory/            # Factory configuration (skills, droids, rules)
+
+# =============================================================================
+# 19. SECRET AND SENSITIVE DATA (NEVER COMMIT)
+# =============================================================================
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+credentials.json
+service-account*.json
+*.htpasswd
+.netrc
+dist/
+node_modules/
+vendor/
+composer.lock
+package-lock.json

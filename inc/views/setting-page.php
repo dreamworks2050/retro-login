@@ -1,0 +1,22 @@
+<?php
+
+/**
+ * Template to render the plugin setting page root in WordPress admin area.
+ * The form, inputs, buttons will be rendered with React components.
+ *
+ * @see ./app/SettingPage.php
+ * @see ./src/setting-page/Page.jsx
+ */
+
+declare(strict_types=1);
+
+?>
+<div class="wrap">
+	<h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+	<div id="retrologin-settings"></div>
+	<noscript>
+		<p>
+			<?php esc_html_e('This setting page requires JavaScript to be enabled in your browser. Please enable JavaScript and reload the page.', 'retrologin'); ?>
+		</p>
+	</noscript>
+</div>

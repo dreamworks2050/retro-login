@@ -1,0 +1,251 @@
+# RetroLogin WordPress Plugin
+
+## Build & Test
+
+```bash
+# Install dependencies
+composer install && npm install
+
+# Build assets (CSS/JS)
+npm run build
+
+# Watch for changes (dev mode)
+npm run start
+
+# Run PHP linter
+composer run lint
+
+# Auto-fix PHP linting issues
+composer run format
+```
+
+## Code Style
+
+- Syntatis coding standard (via Howdy)
+- PSR-4 autoloading with `Retrologin\` namespace
+- Docblocks on classes and complex methods
+- Hooks use `retrologin_` prefix
+- Linter enforces standards: `composer run lint`
+
+## Personal Preferences
+
+Refer to `.factory/memories.md` for coding preferences and past decisions.
+
+## Coding Standards
+
+Follow the conventions documented in:
+- `.factory/rules/howdy.md` - Framework structure and build commands
+- `.factory/rules/php.md` - PHP naming and code style
+- `.factory/rules/wordpress-login.md` - Login page hooks and styling
+- `.factory/rules/security.md` - Security basics
+- `.factory/rules/assets.md` - CSS/JS assets and enqueue
+- `.factory/rules/testing.md` - Testing checklist
+
+---
+
+## Skills & Automation
+
+Droid automatically uses skills when relevant to the task. Invoke droids manually with the Task tool.
+
+### Skills (Context-Aware)
+
+Skills are reusable capabilities invoked by Droid based on task context.
+
+| Skill | When to Use |
+|-------|-------------|
+| `wordpress-hook-generator` | Creating WordPress actions/filters |
+| `retro-css-generator` | Styling the login page |
+| `howdy-structure` | Creating new classes |
+| `i18n-helper` | Adding translatable strings |
+| `asset-builder` | Building CSS/JS assets |
+| `login-redirector` | Setting up redirects |
+| `wp-settings-page` | Creating admin settings |
+| `wp-security-audit` | Reviewing security |
+| `wp-activation` | Handling activation/deactivation |
+| `git-changelog` | Managing versions |
+
+### Custom Droids (Subagents)
+
+Invoke with Task tool: `Run the subagent <name> to <task>`
+
+| Droid | Purpose | Tools | Reasoning |
+|-------|---------|-------|-----------|
+| `wp-code-reviewer` | Review code for standards | read-only | high |
+| `wp-security-audit` | Scan for vulnerabilities | Read, Grep, WebSearch | high |
+| `wp-lint-checker` | Run linting, auto-fix | edit | - |
+| `wp-asset-builder` | Build CSS/JS assets | execute | - |
+| `wp-test-runner` | Run PHPUnit tests | execute | - |
+| `wp-local-tester` | Test in LocalWP | execute | - |
+| `wp-changelog-manager` | Generate changelog | read-only | - |
+| `wp-migration-handler` | Database migrations | edit | - |
+| `wp-docs-generator` | Generate documentation | read-only, edit | medium |
+| `wp-release-prep` | Prepare release zip | execute | - |
+| `wp-task-coordinator` | Multi-step workflows | Read, Edit, Execute | - |
+
+### Droid Usage Examples
+
+```bash
+# Code review
+Run the subagent `wp-code-reviewer` on the staged changes.
+
+# Security scan
+Run the subagent `wp-security-audit` to scan for vulnerabilities.
+
+# Auto-fix linting
+Run the subagent `wp-lint-checker` to fix linting issues.
+
+# Build assets
+Run the subagent `wp-asset-builder` to compile assets.
+
+# Test in LocalWP
+Run the subagent `wp-local-tester` to verify the plugin.
+
+# Prepare release
+Run the subagent `wp-release-prep` to create distribution zip.
+
+# Coordinate multi-step task
+Run the subagent `wp-task-coordinator` to implement login customization.
+```
+
+### Model Strategy
+
+Choose models strategically for cost efficiency:
+
+| Task Type | Recommended Model | Reasoning |
+|-----------|-----------------|-----------|
+| Simple analysis (linting, summaries) | `inherit` (default) or Sonnet | Fast, cost-effective |
+| Code review | `inherit` with `reasoningEffort: high` | Thorough analysis |
+| Security audit | `inherit` with `reasoningEffort: high` | Deep vulnerability scan |
+| Documentation | `inherit` with `reasoningEffort: medium` | Comprehensive docs |
+| Complex multi-step | Opus | Best reasoning capability |
+
+**Note:** All droids use `inherit` by default to match the parent session's model. Set `reasoningEffort` explicitly for complex tasks.
+
+### Reasoning Effort
+
+Configure reasoning depth for analysis-heavy droids:
+
+- `low` - Quick, surface-level analysis
+- `medium` - Balanced analysis and speed
+- `high` - Deep, thorough reasoning (security audits, code reviews)
+
+### Droid Management
+
+**View all droids:**
+```
+/droids
+```
+
+**Actions available:**
+- View droid details
+- Edit droid configuration
+- Delete droid
+- Reload to refresh list
+
+**Claude Code Import:**
+Import existing Claude Code agents:
+1. Run `/droids`
+2. Press `I` to import
+3. Select agents from `~/.claude/agents/`
+4. Confirm import
+
+### Automation Hooks
+
+Configure via `/hooks` in droid:
+
+**Auto-lint on PHP changes:**
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "match_pattern": "*.php",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$FACTORY_PROJECT_DIR\" && composer run format && composer run lint 2>/dev/null | tail -10 || true"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Auto-build on CSS/JS changes:**
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "match_pattern": "*.{css,scss,js}",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$FACTORY_PROJECT_DIR\" && npm run build 2>/dev/null | tail -5 || true"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+---
+
+## Project Overview
+
+RetroLogin is a WordPress plugin that provides a retro-themed login experience for WordPress sites. The plugin enhances the default WordPress login page with nostalgic design elements while maintaining full compatibility with WordPress authentication.
+
+## Technology Stack
+
+- **PHP**: 8.0+ (modern PHP with namespaces)
+- **WordPress**: 6.0+ (LocalWP running at retrologin.local)
+- **Build Tools**: Composer, NPM + wp-scripts
+- **Code Standards**: Syntatis Coding Standard (Howdy default)
+- **Framework**: Howdy (syntatis/howdy) boilerplate
+
+## Project Structure
+
+```
+retrologin/
+├── AGENTS.md              # This file
+├── composer.json          # Dependencies and autoloading
+├── retrologin.php         # Main plugin file
+├── app/                   # PSR-4 autoloaded classes
+│   └── <Namespace>/       # e.g., Retrologin/Admin/Login.php
+├── inc/                   # Non-classified PHP includes
+│   ├── bootstrap/
+│   │   └── app.php        # Bootstrap file
+│   └── languages/         # Translation files
+├── dist/                  # Built assets (CSS/JS) - don't edit
+├── templates/             # Template files
+└── .factory/              # Factory config
+    ├── memories.md        # Project preferences
+    ├── rules/             # Coding conventions (6 files)
+    ├── skills/            # Reusable skills (10 files)
+    └── droids/            # Custom subagents (11 files)
+```
+
+## File Locations Quick Reference
+
+| Purpose | Location |
+|---------|----------|
+| Skills | `.factory/skills/<name>/SKILL.md` |
+| Custom Droids | `.factory/droids/<name>.md` |
+| Rules | `.factory/rules/<name>.md` |
+| Memories | `.factory/memories.md` |
+| Agent Instructions | `AGENTS.md` |
+
+## Development Notes
+
+- Test changes locally via LocalWP at http://retrologin.local
+- Run linting before each commit: `composer run lint`
+- Asset files are built to `dist/` - don't edit directly
+- Use skills when creating hooks, CSS, classes, etc.
+- Use droids for focused tasks: review, security, release
+- Automation hooks auto-lint and auto-build on file changes
+- Configure `/droids` for droid management
+- Use `reasoningEffort: high` for security/code review tasks
