@@ -45,6 +45,9 @@
         "lint": "phpcs",
         "make-pot": "wp i18n make-pot --exclude=vendor,dist . inc/languages/retrologin.pot",
         "scope": "codex scoper:init",
+        "verify": [
+            "@lint"
+        ],
         "zip": "@composer archive --format=zip"
     },
     "scripts-descriptions": {
@@ -53,6 +56,7 @@
         "lint": "Check the codebase for coding standards violations",
         "make-pot": "Generate the POT file for translations",
         "scope": "Scope dependencies namespace with a prefix",
+        "verify": "Run all linters (PHP, JS, CSS)",
         "zip": "Create a zip file of the plugin for distribution"
     },
     "config": {

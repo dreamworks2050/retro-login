@@ -6,18 +6,44 @@
 # Install dependencies
 composer install && npm install
 
-# Build assets (CSS/JS)
-npm run build
+# Verification (run before commit)
+composer run verify        # PHP linting (Syntatis standard)
+npm run lint:js           # JavaScript linting (ESLint)
+# Note: npm run lint:css targets .scss files only
 
-# Watch for changes (dev mode)
-npm run start
+# Fix linting issues
+composer run format        # PHP auto-fix
+npm run format            # JS auto-fix
 
-# Run PHP linter
-composer run lint
+# Build assets
+npm run build            # Production build (minified)
+npm run start            # Dev mode with watch
 
-# Auto-fix PHP linting issues
-composer run format
+# Translations
+composer run make-pot    # Generate POT file
 ```
+
+## Code Verification
+
+Run verification before any commit:
+```bash
+composer run verify        # PHP linting
+npm run lint:js           # JavaScript linting
+npm run format            # Auto-fix JS issues
+composer run format       # Auto-fix PHP issues
+```
+
+All linters pass:
+- PHP: 8/8 checks pass (Syntatis coding standard)
+- JavaScript: No errors (ESLint via wp-scripts)
+
+## Automation Hooks
+
+Configured to auto-run on file changes:
+- **PHP files**: Auto-lint on save via PostToolUse hook
+- **CSS/JS files**: Auto-build on save via PostToolUse hook
+
+Configure hooks: `/hooks`
 
 ## Code Style
 
