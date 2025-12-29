@@ -18,19 +18,20 @@ When reviewing or creating plugin code for security:
 
 ## Security Checklist
 
-- [ ] All `$_GET`, `$_POST`, `$_COOKIE` sanitized
-- [ ] All output uses `esc_*` functions
-- [ ] Forms use nonces (`wp_nonce_field`)
-- [ ] Nonces verified before processing
-- [ ] Capability checks on admin actions (`current_user_can`)
-- [ ] `ABSPATH` check in all PHP files
-- [ ] No direct SQL without `$wpdb->prepare()`
-- [ ] No `eval()` or dynamic code execution
-- [ ] No sensitive data in URLs or logs
+-   [ ] All `$_GET`, `$_POST`, `$_COOKIE` sanitized
+-   [ ] All output uses `esc_*` functions
+-   [ ] Forms use nonces (`wp_nonce_field`)
+-   [ ] Nonces verified before processing
+-   [ ] Capability checks on admin actions (`current_user_can`)
+-   [ ] `ABSPATH` check in all PHP files
+-   [ ] No direct SQL without `$wpdb->prepare()`
+-   [ ] No `eval()` or dynamic code execution
+-   [ ] No sensitive data in URLs or logs
 
 ## Common Security Functions
 
 ### Sanitization
+
 ```php
 sanitize_text_field()      // General text
 sanitize_email()           // Email addresses
@@ -39,6 +40,7 @@ esc_url_raw()              // URLs
 ```
 
 ### Escaping
+
 ```php
 esc_html()    // HTML content
 esc_attr()    // HTML attributes
@@ -47,6 +49,7 @@ esc_textarea() // Textarea content
 ```
 
 ### Nonces
+
 ```php
 wp_nonce_field('action', 'nonce')           // Generate
 wp_verify_nonce($_POST['nonce'], 'action')  // Verify

@@ -10,16 +10,19 @@ description: Create PHP classes following Howdy framework conventions. Use when 
 When creating new PHP classes or files:
 
 1. **Place in correct directory**:
-   - Classes: `app/Namespace/Class.php`
-   - Includes: `inc/` directory
+
+    - Classes: `app/Namespace/Class.php`
+    - Includes: `inc/` directory
 
 2. **Apply namespace**:
-   - Base: `Retrologin\`
-   - Example: `Retrologin\Admin\Settings`
+
+    - Base: `Retrologin\`
+    - Example: `Retrologin\Admin\Settings`
 
 3. **Add required file header**:
-   - `declare(strict_types=1);`
-   - Docblock with description and `@since`
+
+    - `declare(strict_types=1);`
+    - Docblock with description and `@since`
 
 4. **Include ABSPATH check** at the top
 
@@ -90,8 +93,8 @@ class Settings {
 
 ## Key Conventions
 
-- Autoloading: Composer's PSR-4 maps `Retrologin\` to `app/`
-- Don't manually `require` files - use autoloading
-- Coding standard: Syntatis (configured in phpcs.xml.dist)
-- Linter: `composer run lint`
-- Auto-fix: `composer run format`
+-   Autoloading: Composer's PSR-4 maps `Retrologin\` to `app/`
+-   Don't manually `require` files - use autoloading
+-   Coding standard: Syntatis (configured in phpcs.xml.dist)
+-   Linter: `composer run lint`
+-   Auto-fix: `composer run format`

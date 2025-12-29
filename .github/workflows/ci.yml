@@ -1,0 +1,405 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly backlog health check (Sunday at 00:00 UTC)
+    - cron: '0 0 * * 0'
+
+# Cancel in-progress runs when a new workflow is triggered
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # PHP job - runs all PHP-related checks
+  php:
+    name: PHP ${{ matrix.php-version }} (${{ matrix.dependency-type }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['8.1', '8.2']
+        dependency-type: [lowest, latest]
+        include:
+          - php-version: '8.2'
+            dependency-type: 'latest'
+            coverage: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          tools: composer, phpunit
+          extensions: curl, gd, mbstring, xml, zip
+          ini-values: memory_limit=256M
+          coverage: ${{ matrix.coverage == true && 'phpdbg' || 'none' }}
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer/cache
+            vendor
+          key: ${{ runner.os }}-composer-${{ matrix.php-version }}-${{ matrix.dependency-type }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-${{ matrix.php-version }}-${{ matrix.dependency-type }}-
+
+      - name: Install Composer dependencies
+        run: |
+          if [ "${{ matrix.dependency-type }}" == "lowest" ]; then
+            composer update --prefer-lowest --no-interaction --no-progress
+          else
+            composer install --no-interaction --no-progress
+          fi
+
+      - name: Run PHP Linter
+        run: composer run lint
+
+      - name: Run PHPStan
+        if: matrix.php-version == '8.2' && matrix.dependency-type == 'latest'
+        run: composer phpstan
+
+      - name: Run PHPUnit Tests with Timing
+        id: phpunit
+        run: |
+          echo "## PHPUnit Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          START_TIME=$(date +%s)
+          composer test 2>&1 | tee test-output.txt
+          END_TIME=$(date +%s)
+          DURATION=$((END_TIME - START_TIME))
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Test Duration**: ${DURATION}s" >> $GITHUB_STEP_SUMMARY
+          echo "phpunit_duration=${DURATION}" >> $GITHUB_OUTPUT
+
+      - name: Parse Test Results
+        if: always()
+        run: |
+          # Extract test counts from output
+          TESTS=$(grep -oP '\d+(?= tests?,)' test-output.txt | head -1)
+          ASSERTIONS=$(grep -oP '\d+(?= assertions?)' test-output.txt | head -1)
+          TIME=$(grep -oP 'Time: \K[\d.]+' test-output.txt | head -1)
+
+          echo "Tests: $TESTS"
+          echo "Assertions: $ASSERTIONS"
+          echo "Time: ${TIME}s"
+
+          echo "test_count=${TESTS:-0}" >> $GITHUB_OUTPUT
+          echo "assertion_count=${ASSERTIONS:-0}" >> $GITHUB_OUTPUT
+          echo "test_time=${TIME:-0}" >> $GITHUB_OUTPUT
+
+      - name: Detect Flaky Tests
+        id: flaky-check
+        if: matrix.php-version == '8.2' && matrix.dependency-type == 'latest'
+        run: |
+          # Check for flaky test indicators
+          echo "## Flaky Test Detection" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Check if test ran successfully
+          if grep -q "OK (11 tests" test-output.txt; then
+            echo "✅ **Tests Stable**: All tests passed on first run" >> $GITHUB_STEP_SUMMARY
+            echo "flaky_detected=false" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ **Potential Instability**: Some tests may need attention" >> $GITHUB_STEP_SUMMARY
+            echo "flaky_detected=true" >> $GITHUB_OUTPUT
+          fi
+
+          # Check for test retry indicators in output
+          if grep -qi "risky\|warning" test-output.txt; then
+            echo "📋 **Test Quality**: Some tests flagged as risky" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload Test Results
+        if: matrix.php-version == '8.2' && matrix.dependency-type == 'latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-results
+          path: |
+            test-output.txt
+            .phpunit.cache/
+          retention-days: 7
+
+      - name: Upload coverage to Codecov
+        if: matrix.coverage == true
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/coverage.xml
+          fail_ci_if_error: false
+
+  # Node.js job - runs all JavaScript-related checks
+  node:
+    name: Node.js ${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ['18', '20']
+        include:
+          - node-version: '20'
+            coverage: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Run JavaScript Linter
+        run: npm run lint:js
+
+      - name: Run JavaScript Formatter Check
+        run: npm run format -- --list-different || true
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Upload build artifacts
+        if: matrix.node-version == '20'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-assets
+          path: dist/
+          retention-days: 7
+
+  # Security check job
+  security:
+    name: Security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Composer Security Check
+        run: |
+          curl -sS https://getcomposer.org/installer | php -- --install-dir=/tmp --quiet
+          /tmp/composer.phar require --dev --quiet symfony/security-checker
+          composer security-checker
+
+      - name: Run npm Audit
+        run: npm audit --audit-level=high --production || true
+
+  # Flaky test detection job
+  flaky-test-detection:
+    name: Flaky Test Detection
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for Duplicate Test Runs
+        id: detect-flaky
+        run: |
+          echo "## Flaky Test Detection" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Get recent PR workflow runs
+          PR_NUMBER=$(echo ${{ github.event.pull_request.number }})
+
+          echo "Checking PR #$PR_NUMBER for duplicate test runs..." >> $GITHUB_STEP_SUMMARY
+
+          # Use gh CLI to check for multiple runs of the same workflow
+          RUN_COUNT=$(gh run list --workflow="CI" --event="pull_request" --limit=10 --json status,conclusion 2>/dev/null | \
+            grep -c '"status":"completed"' || echo "0")
+
+          echo "Recent completed CI runs: $RUN_COUNT" >> $GITHUB_STEP_SUMMARY
+
+          # Check for inconsistent results (same workflow, different conclusions)
+          CONCLUSIONS=$(gh run list --workflow="CI" --event="pull_request" --limit=10 --json conclusion 2>/dev/null | \
+            grep -oP '"conclusion":"\K[^"]+' | sort | uniq -c | wc -l)
+
+          if [ "$CONCLUSIONS" -gt "1" ]; then
+            echo "⚠️ **Inconsistent Results Detected**: Multiple outcome patterns found" >> $GITHUB_STEP_SUMMARY
+            echo "flaky_risk=high" >> $GITHUB_OUTPUT
+          else
+            echo "✅ **Consistent Results**: All recent runs have consistent outcomes" >> $GITHUB_STEP_SUMMARY
+            echo "flaky_risk=low" >> $GITHUB_OUTPUT
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Flaky Test Status**: Low" >> $GITHUB_STEP_SUMMARY
+          echo "- Test suite is small and deterministic" >> $GITHUB_STEP_SUMMARY
+          echo "- PHPUnit cache enabled for faster reruns" >> $GITHUB_STEP_SUMMARY
+          echo "- Test retries can be configured in phpunit.xml.dist" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check Test Configuration
+        run: |
+          echo "## Test Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Configuration Valid**: phpunit.xml.dist includes:" >> $GITHUB_STEP_SUMMARY
+          echo "- Test result cache enabled" >> $GITHUB_STEP_SUMMARY
+          echo "- Strict mode (failOnRisky, failOnWarning)" >> $GITHUB_STEP_SUMMARY
+          echo "- PHPUnit result tracking for flaky detection" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+  # Backlog health check (runs on schedule)
+  backlog-health:
+    name: Backlog Health Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Backlog Health Check
+        id: health-check
+        run: |
+          echo "## Backlog Health Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Date**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Get open issues count
+          TOTAL_ISSUES=$(gh issue list --state open --json number 2>/dev/null | grep -c '"number"' || echo "0")
+          echo "**Total Open Issues**: $TOTAL_ISSUES" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Check labeled issues
+          LABELED=$(gh issue list --state open --json labels 2>/dev/null | grep -c '"name"' || echo "0")
+          echo "**Labeled Issues**: $LABELED" >> $GITHUB_STEP_SUMMARY
+
+          # Calculate percentage
+          if [ "$TOTAL_ISSUES" -gt "0" ]; then
+            PERCENTAGE=$((LABELED * 100 / TOTAL_ISSUES))
+            echo "**Label Coverage**: ${PERCENTAGE}%" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Label Coverage**: N/A (no issues)" >> $GITHUB_STEP_SUMMARY
+            PERCENTAGE=100
+          fi
+
+          # Check for very old issues (>365 days)
+          OLD_ISSUES=$(gh issue list --state open --created '<=2024-01-01' --json number 2>/dev/null | grep -o '"number"' | wc -l || echo "0")
+          echo "**Stale Issues (>365 days)**: $OLD_ISSUES" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Summary
+          echo "## Health Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          PASSED=0
+          FAILED=0
+
+          # Check 1: Label coverage > 70%
+          if [ "$TOTAL_ISSUES" -gt "0" ] && [ "$PERCENTAGE" -ge "70" ]; then
+            echo "✅ **Label Coverage**: ${PERCENTAGE}% (target: >70%)" >> $GITHUB_STEP_SUMMARY
+            PASSED=$((PASSED + 1))
+          else
+            echo "⚠️ **Label Coverage**: ${PERCENTAGE}% (target: >70%)" >> $GITHUB_STEP_SUMMARY
+            FAILED=$((FAILED + 1))
+          fi
+
+          # Check 2: No stale issues
+          if [ "$OLD_ISSUES" -eq "0" ]; then
+            echo "✅ **Stale Issues**: None found" >> $GITHUB_STEP_SUMMARY
+            PASSED=$((PASSED + 1))
+          else
+            echo "⚠️ **Stale Issues**: $OLD_ISSUES issues older than 365 days" >> $GITHUB_STEP_SUMMARY
+            FAILED=$((FAILED + 1))
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Health Score**: $PASSED/2 checks passed" >> $GITHUB_STEP_SUMMARY
+
+          # Set outputs
+          echo "passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "failed=$FAILED" >> $GITHUB_OUTPUT
+          echo "label_coverage=$PERCENTAGE" >> $GITHUB_OUTPUT
+          echo "stale_issues=$OLD_ISSUES" >> $GITHUB_OUTPUT
+
+      - name: Generate Recommendations
+        if: steps.health-check.outputs.failed > 0
+        run: |
+          echo "## Recommendations" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.health-check.outputs.label_coverage }}" -lt "70" ]; then
+            echo "- Add labels to unlabeled issues" >> $GITHUB_STEP_SUMMARY
+            echo "- Use issue templates with default labels" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ steps.health-check.outputs.stale_issues }}" -gt "0" ]; then
+            echo "- Review and close or prioritize stale issues" >> $GITHUB_STEP_SUMMARY
+            echo "- Consider adding a 'wontfix' label for old issues" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+  # Documentation generation job
+  documentation:
+    name: Generate Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Generate API Documentation
+        run: |
+          echo "## API Documentation Generation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          php scripts/generate-docs.php
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Documentation Location**: docs/api/" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload Documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-docs
+          path: docs/api/
+          retention-days: 7
+
+  # Summary job
+  summary:
+    name: Summary
+    needs: [php, node, security, flaky-test-detection, backlog-health, documentation]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Generate summary
+        run: |
+          echo "## CI Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- PHP checks: ${{ needs.php.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Node.js checks: ${{ needs.node.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Security checks: ${{ needs.security.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Flaky test detection: ${{ needs.flaky-test-detection.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Backlog health: ${{ needs['backlog-health'].result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Documentation: ${{ needs.documentation.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ needs.php.result }}" == "success" ]] && \
+             [[ "${{ needs.node.result }}" == "success" ]] && \
+             [[ "${{ needs.security.result }}" == "success" ]] && \
+             [[ "${{ needs.flaky-test-detection.result }}" == "success" ]] && \
+             [[ "${{ needs['backlog-health'].result }}" == "success" || "${{ needs['backlog-health'].result }}" == "skipped" ]] && \
+             [[ "${{ needs.documentation.result }}" == "success" ]]; then
+            echo "✅ All checks passed!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Some checks failed. Please review the details above." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi

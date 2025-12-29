@@ -9,5 +9,5 @@ import { useSettings } from '../setting-page/useSettings';
 
 export default function Edit() {
 	const { getOption } = useSettings();
-	return <p { ...useBlockProps() }>{ getOption( 'greeting' ) }</p>;
+	return <p {...useBlockProps()}>{getOption('greeting')}</p>;
 }

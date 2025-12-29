@@ -9,17 +9,11 @@
 	"endOfLine": "lf",
 	"overrides": [
 		{
-			"files": "*.json",
+			"files": ["*.json", "*.yml", "*.yaml", "*.md"],
 			"options": {
 				"useTabs": false,
-				"tabWidth": 2
-			}
-		},
-		{
-			"files": ["*.yml", "*.yaml"],
-			"options": {
-				"useTabs": false,
-				"tabWidth": 2
+				"tabWidth": 2,
+				"singleQuote": false
 			}
 		}
 	]

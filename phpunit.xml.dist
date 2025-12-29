@@ -7,13 +7,21 @@
 	beStrictAboutOutputDuringTests="true"
 	beStrictAboutTestsThatDoNotTestAnything="true"
 	verbose="true"
+	failOnRisky="true"
+	failOnWarning="true"
+	stopOnFailure="false"
+	cacheResult="true"
+	cacheResultFile=".phpunit.cache/test-results"
 >
 	<testsuites>
-		<testsuite name="RetroLogin Test Suite">
-			<directory suffix="Test.php">tests</directory>
+		<testsuite name="Unit">
+			<directory suffix="Test.php">tests/Unit</directory>
+		</testsuite>
+		<testsuite name="Integration">
+			<directory suffix="Test.php">tests/Integration</directory>
 		</testsuite>
 	</testsuites>
-	<coverage>
+	<coverage processUncoveredFiles="true">
 		<include>
 			<directory suffix=".php">app</directory>
 		</include>
@@ -21,6 +29,11 @@
 			<directory>vendor</directory>
 			<directory>tests</directory>
 		</exclude>
+		<report>
+			<html outputDirectory="coverage"/>
+			<text outputFile="php://stdout"/>
+			<clover outputFile="coverage/clover.xml"/>
+		</report>
 	</coverage>
 	<php>
 		<const name="PLUGIN_FILE" value="retrologin.php"/>

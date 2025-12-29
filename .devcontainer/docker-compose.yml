@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  retro-login:
+    image: mcr.microsoft.com/devcontainers/php:8.2-bookworm
+    container_name: retro-login-dev
+    restart: unless-stopped
+    working_dir: /workspaces/retro-login
+    volumes:
+      - ..:/workspaces/retro-login:cached
+    command: sleep infinity
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      - NODE_ENV=development
+      - PHP_MEMORY_LIMIT=256M
+    dev_container: true
+
+  # Optional: WordPress service for integration testing
+  wordpress:
+    image: wordpress:6.6
+    container_name: retro-login-wordpress
+    restart: unless-stopped
+    ports:
+      - '8080:80'
+    environment:
+      - WORDPRESS_DB_HOST=mysql
+      - WORDPRESS_DB_USER=wordpress
+      - WORDPRESS_DB_PASSWORD=wordpress
+      - WORDPRESS_DB_NAME=wordpress
+    volumes:
+      - wordpress_data:/var/www/html
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8.0
+    container_name: retro-login-mysql
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=wordpress
+      - MYSQL_USER=wordpress
+      - MYSQL_PASSWORD=wordpress
+    volumes:
+      - mysql_data:/var/www/html
+
+volumes:
+  wordpress_data:
+  mysql_data:

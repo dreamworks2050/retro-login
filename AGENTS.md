@@ -30,6 +30,7 @@ composer run make-pot    # Generate POT file
 ## Environment Setup
 
 For local development:
+
 1. Copy `.env.example` to `.env`
 2. Update `WP_DEBUG=true` for development mode
 3. Set `RETROLOGIN_DEBUG=false` (or `true` for verbose plugin logging)
@@ -39,6 +40,7 @@ See `.env.example` for all available configuration options.
 ## Code Verification
 
 Run verification before any commit:
+
 ```bash
 composer run verify        # PHP linting
 composer run phpstan      # Static analysis (PHPStan level 5)
@@ -48,24 +50,26 @@ composer run format       # Auto-fix PHP issues
 ```
 
 All linters pass:
-- PHP: 8/8 checks pass (Syntatis coding standard)
-- JavaScript: No errors (ESLint via wp-scripts)
+
+-   PHP: 8/8 checks pass (Syntatis coding standard)
+-   JavaScript: No errors (ESLint via wp-scripts)
 
 ## Automation Hooks
 
 Configured to auto-run on file changes:
-- **PHP files**: Auto-lint on save via PostToolUse hook
-- **CSS/JS files**: Auto-build on save via PostToolUse hook
+
+-   **PHP files**: Auto-lint on save via PostToolUse hook
+-   **CSS/JS files**: Auto-build on save via PostToolUse hook
 
 Configure hooks: `/hooks`
 
 ## Code Style
 
-- Syntatis coding standard (via Howdy)
-- PSR-4 autoloading with `Retrologin\` namespace
-- Docblocks on classes and complex methods
-- Hooks use `retrologin_` prefix
-- Linter enforces standards: `composer run lint`
+-   Syntatis coding standard (via Howdy)
+-   PSR-4 autoloading with `Retrologin\` namespace
+-   Docblocks on classes and complex methods
+-   Hooks use `retrologin_` prefix
+-   Linter enforces standards: `composer run lint`
 
 ## Personal Preferences
 
@@ -74,12 +78,13 @@ Refer to `.factory/memories.md` for coding preferences and past decisions.
 ## Coding Standards
 
 Follow the conventions documented in:
-- `.factory/rules/howdy.md` - Framework structure and build commands
-- `.factory/rules/php.md` - PHP naming and code style
-- `.factory/rules/wordpress-login.md` - Login page hooks and styling
-- `.factory/rules/security.md` - Security basics
-- `.factory/rules/assets.md` - CSS/JS assets and enqueue
-- `.factory/rules/testing.md` - Testing checklist
+
+-   `.factory/rules/howdy.md` - Framework structure and build commands
+-   `.factory/rules/php.md` - PHP naming and code style
+-   `.factory/rules/wordpress-login.md` - Login page hooks and styling
+-   `.factory/rules/security.md` - Security basics
+-   `.factory/rules/assets.md` - CSS/JS assets and enqueue
+-   `.factory/rules/testing.md` - Testing checklist
 
 ---
 
@@ -91,36 +96,36 @@ Droid automatically uses skills when relevant to the task. Invoke droids manuall
 
 Skills are reusable capabilities invoked by Droid based on task context.
 
-| Skill | When to Use |
-|-------|-------------|
+| Skill                      | When to Use                        |
+| -------------------------- | ---------------------------------- |
 | `wordpress-hook-generator` | Creating WordPress actions/filters |
-| `retro-css-generator` | Styling the login page |
-| `howdy-structure` | Creating new classes |
-| `i18n-helper` | Adding translatable strings |
-| `asset-builder` | Building CSS/JS assets |
-| `login-redirector` | Setting up redirects |
-| `wp-settings-page` | Creating admin settings |
-| `wp-security-audit` | Reviewing security |
-| `wp-activation` | Handling activation/deactivation |
-| `git-changelog` | Managing versions |
+| `retro-css-generator`      | Styling the login page             |
+| `howdy-structure`          | Creating new classes               |
+| `i18n-helper`              | Adding translatable strings        |
+| `asset-builder`            | Building CSS/JS assets             |
+| `login-redirector`         | Setting up redirects               |
+| `wp-settings-page`         | Creating admin settings            |
+| `wp-security-audit`        | Reviewing security                 |
+| `wp-activation`            | Handling activation/deactivation   |
+| `git-changelog`            | Managing versions                  |
 
 ### Custom Droids (Subagents)
 
 Invoke with Task tool: `Run the subagent <name> to <task>`
 
-| Droid | Purpose | Tools | Reasoning |
-|-------|---------|-------|-----------|
-| `wp-code-reviewer` | Review code for standards | read-only | high |
-| `wp-security-audit` | Scan for vulnerabilities | Read, Grep, WebSearch | high |
-| `wp-lint-checker` | Run linting, auto-fix | edit | - |
-| `wp-asset-builder` | Build CSS/JS assets | execute | - |
-| `wp-test-runner` | Run PHPUnit tests | execute | - |
-| `wp-local-tester` | Test in LocalWP | execute | - |
-| `wp-changelog-manager` | Generate changelog | read-only | - |
-| `wp-migration-handler` | Database migrations | edit | - |
-| `wp-docs-generator` | Generate documentation | read-only, edit | medium |
-| `wp-release-prep` | Prepare release zip | execute | - |
-| `wp-task-coordinator` | Multi-step workflows | Read, Edit, Execute | - |
+| Droid                  | Purpose                   | Tools                 | Reasoning |
+| ---------------------- | ------------------------- | --------------------- | --------- |
+| `wp-code-reviewer`     | Review code for standards | read-only             | high      |
+| `wp-security-audit`    | Scan for vulnerabilities  | Read, Grep, WebSearch | high      |
+| `wp-lint-checker`      | Run linting, auto-fix     | edit                  | -         |
+| `wp-asset-builder`     | Build CSS/JS assets       | execute               | -         |
+| `wp-test-runner`       | Run PHPUnit tests         | execute               | -         |
+| `wp-local-tester`      | Test in LocalWP           | execute               | -         |
+| `wp-changelog-manager` | Generate changelog        | read-only             | -         |
+| `wp-migration-handler` | Database migrations       | edit                  | -         |
+| `wp-docs-generator`    | Generate documentation    | read-only, edit       | medium    |
+| `wp-release-prep`      | Prepare release zip       | execute               | -         |
+| `wp-task-coordinator`  | Multi-step workflows      | Read, Edit, Execute   | -         |
 
 ### Droid Usage Examples
 
@@ -151,13 +156,13 @@ Run the subagent `wp-task-coordinator` to implement login customization.
 
 Choose models strategically for cost efficiency:
 
-| Task Type | Recommended Model | Reasoning |
-|-----------|-----------------|-----------|
-| Simple analysis (linting, summaries) | `inherit` (default) or Sonnet | Fast, cost-effective |
-| Code review | `inherit` with `reasoningEffort: high` | Thorough analysis |
-| Security audit | `inherit` with `reasoningEffort: high` | Deep vulnerability scan |
-| Documentation | `inherit` with `reasoningEffort: medium` | Comprehensive docs |
-| Complex multi-step | Opus | Best reasoning capability |
+| Task Type                            | Recommended Model                        | Reasoning                 |
+| ------------------------------------ | ---------------------------------------- | ------------------------- |
+| Simple analysis (linting, summaries) | `inherit` (default) or Sonnet            | Fast, cost-effective      |
+| Code review                          | `inherit` with `reasoningEffort: high`   | Thorough analysis         |
+| Security audit                       | `inherit` with `reasoningEffort: high`   | Deep vulnerability scan   |
+| Documentation                        | `inherit` with `reasoningEffort: medium` | Comprehensive docs        |
+| Complex multi-step                   | Opus                                     | Best reasoning capability |
 
 **Note:** All droids use `inherit` by default to match the parent session's model. Set `reasoningEffort` explicitly for complex tasks.
 
@@ -165,25 +170,28 @@ Choose models strategically for cost efficiency:
 
 Configure reasoning depth for analysis-heavy droids:
 
-- `low` - Quick, surface-level analysis
-- `medium` - Balanced analysis and speed
-- `high` - Deep, thorough reasoning (security audits, code reviews)
+-   `low` - Quick, surface-level analysis
+-   `medium` - Balanced analysis and speed
+-   `high` - Deep, thorough reasoning (security audits, code reviews)
 
 ### Droid Management
 
 **View all droids:**
+
 ```
 /droids
 ```
 
 **Actions available:**
-- View droid details
-- Edit droid configuration
-- Delete droid
-- Reload to refresh list
+
+-   View droid details
+-   Edit droid configuration
+-   Delete droid
+-   Reload to refresh list
 
 **Claude Code Import:**
 Import existing Claude Code agents:
+
 1. Run `/droids`
 2. Press `I` to import
 3. Select agents from `~/.claude/agents/`
@@ -194,42 +202,44 @@ Import existing Claude Code agents:
 Configure via `/hooks` in droid:
 
 **Auto-lint on PHP changes:**
+
 ```json
 {
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write",
-        "match_pattern": "*.php",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cd \"$FACTORY_PROJECT_DIR\" && composer run format && composer run lint 2>/dev/null | tail -10 || true"
-          }
-        ]
-      }
-    ]
-  }
+	"hooks": {
+		"PostToolUse": [
+			{
+				"matcher": "Write",
+				"match_pattern": "*.php",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "cd \"$FACTORY_PROJECT_DIR\" && composer run format && composer run lint 2>/dev/null | tail -10 || true"
+					}
+				]
+			}
+		]
+	}
 }
 ```
 
 **Auto-build on CSS/JS changes:**
+
 ```json
 {
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit",
-        "match_pattern": "*.{css,scss,js}",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cd \"$FACTORY_PROJECT_DIR\" && npm run build 2>/dev/null | tail -5 || true"
-          }
-        ]
-      }
-    ]
-  }
+	"hooks": {
+		"PostToolUse": [
+			{
+				"matcher": "Edit",
+				"match_pattern": "*.{css,scss,js}",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "cd \"$FACTORY_PROJECT_DIR\" && npm run build 2>/dev/null | tail -5 || true"
+					}
+				]
+			}
+		]
+	}
 }
 ```
 
@@ -241,11 +251,11 @@ RetroLogin is a WordPress plugin that provides a retro-themed login experience f
 
 ## Technology Stack
 
-- **PHP**: 8.0+ (modern PHP with namespaces)
-- **WordPress**: 6.0+ (LocalWP running at retrologin.local)
-- **Build Tools**: Composer, NPM + wp-scripts
-- **Code Standards**: Syntatis Coding Standard (Howdy default)
-- **Framework**: Howdy (syntatis/howdy) boilerplate
+-   **PHP**: 8.0+ (modern PHP with namespaces)
+-   **WordPress**: 6.0+ (LocalWP running at retrologin.local)
+-   **Build Tools**: Composer, NPM + wp-scripts
+-   **Code Standards**: Syntatis Coding Standard (Howdy default)
+-   **Framework**: Howdy (syntatis/howdy) boilerplate
 
 ## Project Structure
 
@@ -271,21 +281,21 @@ retrologin/
 
 ## File Locations Quick Reference
 
-| Purpose | Location |
-|---------|----------|
-| Skills | `.factory/skills/<name>/SKILL.md` |
-| Custom Droids | `.factory/droids/<name>.md` |
-| Rules | `.factory/rules/<name>.md` |
-| Memories | `.factory/memories.md` |
-| Agent Instructions | `AGENTS.md` |
+| Purpose            | Location                          |
+| ------------------ | --------------------------------- |
+| Skills             | `.factory/skills/<name>/SKILL.md` |
+| Custom Droids      | `.factory/droids/<name>.md`       |
+| Rules              | `.factory/rules/<name>.md`        |
+| Memories           | `.factory/memories.md`            |
+| Agent Instructions | `AGENTS.md`                       |
 
 ## Development Notes
 
-- Test changes locally via LocalWP at http://retrologin.local
-- Run linting before each commit: `composer run lint`
-- Asset files are built to `dist/` - don't edit directly
-- Use skills when creating hooks, CSS, classes, etc.
-- Use droids for focused tasks: review, security, release
-- Automation hooks auto-lint and auto-build on file changes
-- Configure `/droids` for droid management
-- Use `reasoningEffort: high` for security/code review tasks
+-   Test changes locally via LocalWP at http://retrologin.local
+-   Run linting before each commit: `composer run lint`
+-   Asset files are built to `dist/` - don't edit directly
+-   Use skills when creating hooks, CSS, classes, etc.
+-   Use droids for focused tasks: review, security, release
+-   Automation hooks auto-lint and auto-build on file changes
+-   Configure `/droids` for droid management
+-   Use `reasoningEffort: high` for security/code review tasks

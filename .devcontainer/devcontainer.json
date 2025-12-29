@@ -1,0 +1,51 @@
+{
+  "name": "RetroLogin Development",
+  "image": "mcr.microsoft.com/devcontainers/php:8.2-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/composer:2": {
+      "version": "latest",
+      "prefer-global": true,
+      "install-dev-dependencies": true
+    },
+    "ghcr.io/devcontainers/features/node:20": {
+      "version": "20"
+    }
+  },
+  "postCreateCommand": "composer install && npm install",
+  "remoteUser": "vscode",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "php.validate.executablePath": "/usr/bin/php",
+        "phpcs.standard": "WordPress",
+        "phpcbf.standard": "WordPress"
+      },
+      "extensions": [
+        "bmewburn.vscode-intelephense-client",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "phpfmt.phpfmt",
+        "junstyle.php-cs-fixer",
+        " streetsidesoftware.code-spell-checker"
+      ]
+    }
+  },
+  "portsAttributes": {
+    "80": {
+      "label": "HTTP",
+      "protocol": "tcp",
+      "onAutoForward": "notify"
+    },
+    "443": {
+      "label": "HTTPS",
+      "protocol": "tcp",
+      "onAutoForward": "notify"
+    }
+  },
+  "hostRequirements": {
+    "cpus": 2,
+    "memory": "4gb"
+  }
+}

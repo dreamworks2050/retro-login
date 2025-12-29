@@ -1,0 +1,255 @@
+# RetroLogin Architecture Documentation
+
+This document provides visual architecture diagrams for the RetroLogin WordPress plugin.
+
+## System Overview
+
+The RetroLogin plugin enhances the WordPress login page with retro-themed styling while maintaining full compatibility with WordPress authentication.
+
+## Component Architecture
+
+```mermaid
+graph TD
+    subgraph WordPress Core
+        WP[WordPress Login Page<br/>/wp-login.php]
+        AUTH[Authentication<br/>System]
+        HOOKS[Hook System<br/>Actions & Filters]
+    end
+
+    subgraph RetroLogin Plugin
+        MAIN[retrologin.php<br/>Main Plugin File]
+        
+        subgraph Core Components
+            INIT[Bootstrap<br/>Initialization]
+            LOADER[Autoloader<br/>PSR-4]
+        end
+        
+        subgraph Application Layer
+            LOGIN[Login<br/>Handler]
+            SETTINGS[Settings<br/>Manager]
+            LOGGER[Logger<br/>Structured]
+        end
+        
+        subgraph Assets
+            CSS[CSS<br/>Styles]
+            JS[JavaScript<br/>Scripts]
+            ICONS[Icon<br/>Assets]
+        end
+    end
+
+    WP --> HOOKS
+    HOOKS --> MAIN
+    MAIN --> INIT
+    MAIN --> LOADER
+    
+    INIT --> LOGIN
+    INIT --> SETTINGS
+    INIT --> LOGGER
+    
+    LOGIN --> CSS
+    LOGIN --> JS
+    LOGIN --> ICONS
+    
+    HOOKS --> AUTH
+    
+    SETTINGS --> OPTIONS[(WordPress<br/>Options DB)]
+```
+
+## Directory Structure
+
+```mermaid
+graph TD
+    ROOT[retrologin/]
+    
+    subgraph Plugin Root
+        MAIN[retrologin.php<br/>Entry Point]
+        CONFIG[composer.json<br/>Package Config]
+    end
+    
+    subgraph Application Layer [app/]
+        CORE[Retrologin/<br/>Namespace]
+        LOGIN[Login.php<br/>Login Handler]
+        SETTINGS[Settings.php<br/>Settings Manager]
+        LOGGER[Logger.php<br/>Logging]
+    end
+    
+    subgraph Includes [inc/]
+        BOOT[bootstrap/<br/>Bootstrap Files]
+        LANG[languages/<br/>Translations]
+    end
+    
+    subgraph Assets [dist/]
+        DIST_CSS[css/<br/>Compiled CSS]
+        DIST_JS[js/<br/>Compiled JS]
+    end
+    
+    subgraph Source [src/]
+        SRC_BLOCKS[block/<br/>Gutenberg Blocks]
+        SRC_PAGES[setting-page/<br/>Admin Pages]
+    end
+    
+    ROOT --> MAIN
+    ROOT --> CONFIG
+    ROOT --> APP
+    ROOT --> INC
+    ROOT --> DIST
+    ROOT --> SRC
+```
+
+## Data Flow: Login Page Request
+
+```mermaid
+sequenceDiagram
+    participant User as User/Browser
+    participant WP as WordPress
+    participant Plugin as RetroLogin Plugin
+    participant DB as WordPress DB
+    participant Assets as Static Assets
+    
+    User->>WP: GET /wp-login.php
+    WP->>Plugin: Load Plugin
+    Plugin->>Plugin: Initialize Autoloader
+    Plugin->>Plugin: Register Hooks
+    
+    Note over Plugin: Hook: login_enqueue_scripts
+    Plugin->>Assets: Enqueue CSS
+    Plugin->>Assets: Enqueue JavaScript
+    
+    Note over Plugin: Hook: login_head
+    Plugin->>Plugin: Apply Custom Styles
+    
+    User->>WP: Submit Credentials
+    WP->>WP: Process Authentication
+    WP->>DB: Verify Credentials
+    
+    alt Authentication Success
+        DB-->>WP: Valid User
+        WP-->>User: Redirect to Dashboard
+    else Authentication Failed
+        DB-->>WP: Invalid Credentials
+        WP-->>User: Show Error Message
+    end
+```
+
+## Settings Data Flow
+
+```mermaid
+sequenceDiagram
+    participant Admin as Admin User
+    participant Page as Settings Page
+    participant API as WordPress Settings API
+    participant Options as Options Table
+    participant Login as Login Handler
+    
+    Admin->>Page:访问设置页面
+    Page->>API: 获取当前设置
+    API->>Options: 读取选项值
+    Options-->>Page: 返回设置
+    
+    Admin->>Page: 保存设置
+    Page->>API: 验证并保存
+    API->>Options: 存储到数据库
+    
+    Note over Options: 设置已更新
+    
+    Login->>API: 获取用户设置
+    API->>Options: 读取选项值
+    Options-->>Login: 返回设置
+    Login->>Login: 应用自定义样式
+```
+
+## Hook Points
+
+```mermaid
+graph LR
+    subgraph Action Hooks
+        A1[login_init]
+        A2[login_enqueue_scripts]
+        A3[login_head]
+        A4[login_footer]
+    end
+    
+    subgraph Filter Hooks
+        F1[login_headerurl]
+        F2[login_headertitle]
+        F3[login_message]
+        F4[retrieve_password_message]
+    end
+    
+    subgraph Shortcodes
+        S1[retro_login_form]
+    end
+    
+    RETRO[RetroLogin Plugin] --> A1
+    RETRO --> A2
+    RETRO --> A3
+    RETRO --> A4
+    
+    RETRO --> F1
+    RETRO --> F2
+    RETRO --> F3
+    RETRO --> F4
+    
+    RETRO --> S1
+```
+
+## Testing Architecture
+
+```mermaid
+graph TD
+    subgraph Test Suite
+        UNIT[Unit Tests<br/>tests/Unit/]
+        INT[Integration Tests<br/>tests/Integration/]
+        
+        subgraph Test Coverage
+            COV1[Plugin Class]
+            COV2[Login Handler]
+            COV3[Settings Manager]
+            COV4[Logger]
+        end
+    end
+    
+    subgraph CI/CD Pipeline
+        GHA[GitHub Actions]
+        TEST[Run Tests]
+        BUILD[Build Assets]
+        DEPLOY[Deploy]
+    end
+    
+    UNIT --> COV1
+    UNIT --> COV2
+    UNIT --> COV3
+    UNIT --> COV4
+    
+    INT --> COV1
+    INT --> COV2
+    
+    TEST --> UNIT
+    TEST --> INT
+    
+    GHA --> TEST
+    GHA --> BUILD
+```
+
+## Error Handling Flow
+
+```mermaid
+flowchart TD
+    A[Error Occurs] --> B{Is Debug Mode?}
+    B -->|Yes| C[Log Error Details]
+    B -->|No| D[Log Minimal Info]
+    
+    C --> E{Error Severity}
+    D --> E
+    
+    E -->|Debug| F[Debug Log]
+    E -->|Info| G[Info Log]
+    E -->|Warning| H[Warning Log]
+    E -->|Error| I[Error Log + WP Debug]
+    
+    F --> J[Output to debug.log]
+    G --> J
+    H --> J
+    I --> J
+    I --> K[Display Error if WP_DEBUG_DISPLAY]
+```

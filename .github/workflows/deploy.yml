@@ -1,0 +1,202 @@
+name: Deploy
+
+on:
+  release:
+    types: [published]
+
+# Cancel in-progress runs when a new workflow is triggered
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Build and verify
+  build:
+    name: Build & Verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer, phpunit
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-progress
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Run PHP Linter
+        run: composer run lint
+
+      - name: Run PHPUnit Tests
+        run: composer test
+
+      - name: Build Assets
+        run: npm run build
+
+      - name: Generate POT File
+        run: composer run make-pot
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            dist/
+            inc/languages/retrologin.pot
+          retention-days: 7
+
+  # Create distribution zip
+  create-zip:
+    name: Create Distribution Package
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: build/
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+
+      - name: Create Distribution Package
+        run: |
+          # Get version from tag (remove 'v' prefix)
+          VERSION=${GITHUB_REF_NAME#v}
+
+          # Create temporary directory
+          TEMP_DIR="temp-deploy"
+          mkdir -p "$TEMP_DIR"
+
+          # Copy files excluding dev artifacts
+          rsync -av --exclude='.git' --exclude='node_modules' \
+            --exclude='vendor' --exclude='.github' \
+            --exclude='.husky' --exclude='.devcontainer' \
+            --exclude='tests' --exclude='src' \
+            --exclude='.editorconfig' --exclude='.eslintrc' \
+            --exclude='.gitignore' --exclude='.prettierrc' \
+            --exclude='phpstan.neon' --exclude='phpcs.xml.dist' \
+            --exclude='phpunit.xml.dist' --exclude='webpack.config.js' \
+            --exclude='scoper.inc.php' --exclude='composer.lock' \
+            --exclude='package-lock.json' --exclude='.factory' \
+            --exclude='docs' --exclude='*.md' \
+            --exclude='AGENTS.md' \
+            . "$TEMP_DIR/retrologin/"
+
+          # Copy built assets
+          cp -r build/dist/* "$TEMP_DIR/retrologin/dist/"
+          cp build/retrologin.pot "$TEMP_DIR/retrologin/inc/languages/"
+
+          # Create version constant
+          echo "<?php define('RETRORLOGIN_VERSION', '$VERSION');" > "$TEMP_DIR/retrologin/version.php"
+
+          # Create zip archive
+          cd "$TEMP_DIR"
+          zip -r "../retrologin-$VERSION.zip" retrologin/
+
+          # Move to artifacts
+          mv ../retrologin-$VERSION.zip $GITHUB_WORKSPACE/
+
+          # Cleanup
+          cd $GITHUB_WORKSPACE
+          rm -rf "$TEMP_DIR"
+
+      - name: Upload Distribution Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: retrologin-${{ github.event.release.tag_name }}.zip
+          path: retrologin-*.zip
+          retention-days: 30
+
+  # WordPress.org Deployment (optional - uncomment when ready)
+  # wordpress-deploy:
+  #   name: Deploy to WordPress.org
+  #   needs: create-zip
+  #   runs-on: ubuntu-latest
+  #   if: startsWith(github.ref, 'refs/tags/v')
+  #   steps:
+  #     - name: Checkout WordPress.org plugin SVN
+  #       uses: actions/checkout@v4
+  #       with:
+  #         repository: wordpress-plugin/retrologin
+  #         token: ${{ secrets.WORDPRESS_ORG_TOKEN }}
+  #         sparse-checkout: |
+  #           trunk
+  #           tags
+  #           assets
+  #         sparse-checkout-cone-mode: false
+  #         path: wordpress-org
+  #
+  #     - name: Download Distribution Package
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: retrologin-${{ github.event.release.tag_name }}.zip
+  #         path: wordpress-org/
+  #
+  #     - name: Extract and Prepare
+  #       run: |
+  #         VERSION=${GITHUB_REF_NAME#v}
+  #         unzip -q wordpress-org/retrologin-$VERSION.zip -d wordpress-org/trunk/
+  #         mv wordpress-org/trunk/retrologin/* wordpress-org/trunk/
+  #         rmdir wordpress-org/trunk/retrologin
+  #
+  #     - name: Commit to WordPress.org
+  #       run: |
+  #         cd wordpress-org
+  #         git config user.name "GitHub Actions"
+  #         git config user.email "actions@github.com"
+  #         git add .
+  #         git status
+  #         git commit -m "Release $VERSION"
+  #         git push
+
+  # Summary
+  summary:
+    name: Deployment Summary
+    needs: [build, create-zip]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Generate Summary
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ github.event.release.tag_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build**: ${{ needs.build.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Distribution**: ${{ needs.create-zip.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ needs.build.result }}" == "success" ]] && \
+             [[ "${{ needs.create-zip.result }}" == "success" ]]; then
+            echo "✅ Deployment package ready for distribution!" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Next Steps:**" >> $GITHUB_STEP_SUMMARY
+            echo "- Download the ZIP artifact" >> $GITHUB_STEP_SUMMARY
+            echo "- Upload to WordPress.org plugin repository" >> $GITHUB_STEP_SUMMARY
+            echo "- Update WordPress.org readme.txt if needed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Deployment failed. Please review the logs above." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi

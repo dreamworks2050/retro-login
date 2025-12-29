@@ -4,18 +4,18 @@
 
 ## Features
 
-* [PSR-4 Autoloading](https://www.php-fig.org/psr/psr-4/) with [Composer](https://getcomposer.org), for automatic class loading.
-* [PHP Code Sniffer (PHPCS)](https://github.com/PHPCSStandards/PHP_CodeSniffer), for PHP code style checking.
-* [PHP-Scoper](https://github.com/humbug/php-scoper), for scoping the plugin dependencies.
-* [ESLint](https://eslint.org/), for JavaScript code style checking.
-* [@wordpress/scripts](https://www.npmjs.com/package/@wordpress/scripts), for JavaScript tooling, e.g. ESLint, and asset compilation.
-* [@syntatis/kubrick](https://www.npmjs.com/package/@syntatis/kubrick), for building classic WordPress® admin application interface with React.js.
+-   [PSR-4 Autoloading](https://www.php-fig.org/psr/psr-4/) with [Composer](https://getcomposer.org), for automatic class loading.
+-   [PHP Code Sniffer (PHPCS)](https://github.com/PHPCSStandards/PHP_CodeSniffer), for PHP code style checking.
+-   [PHP-Scoper](https://github.com/humbug/php-scoper), for scoping the plugin dependencies.
+-   [ESLint](https://eslint.org/), for JavaScript code style checking.
+-   [@wordpress/scripts](https://www.npmjs.com/package/@wordpress/scripts), for JavaScript tooling, e.g. ESLint, and asset compilation.
+-   [@syntatis/kubrick](https://www.npmjs.com/package/@syntatis/kubrick), for building classic WordPress® admin application interface with React.js.
 
 ## Requirements
 
-* PHP 7.4 or higher
-* [Composer](https://getcomposer.org)
-* Node.js 20 or higher
+-   PHP 7.4 or higher
+-   [Composer](https://getcomposer.org)
+-   Node.js 20 or higher
 
 ## Usage
 
@@ -31,9 +31,11 @@ Once you've input all these details, it will scope the plugin dependency librari
 
 > [!TIP]  
 > Want to create the project in a different folder? Just add the directory name at the end of the command, like this:
+>
 > ```bash
 > composer create-project syntatis/howdy awesome-plugin
 > ```
+>
 > This will create the project in the `awesome-plugin` directory.  
 > For more details, check out the [Composer CLI documentation](https://getcomposer.org/doc/03-cli.md#create-project).
 
@@ -77,13 +79,13 @@ Commands are available to help you with the development process. You can run the
 	</tbody>
 </table>
 
-## Plugins 
+## Plugins
 
 List of plugins built with Howdy:
 
-- 🚦 [Feature Flipper](https://wordpress.org/plugins/syntatis-feature-flipper/): Disable Comments, Gutenberg, Emojis, and other features you don't need in WordPress®.
+-   🚦 [Feature Flipper](https://wordpress.org/plugins/syntatis-feature-flipper/): Disable Comments, Gutenberg, Emojis, and other features you don't need in WordPress®.
 
 ## References
 
-- [WordPress Plugin Handbook](https://developer.wordpress.org/plugins/) for plugin guidelines.
-- [WordPress Plugin Boilerplate](https://github.com/DevinVinson/WordPress-Plugin-Boilerplate) for inspiration.
+-   [WordPress Plugin Handbook](https://developer.wordpress.org/plugins/) for plugin guidelines.
+-   [WordPress Plugin Boilerplate](https://github.com/DevinVinson/WordPress-Plugin-Boilerplate) for inspiration.
