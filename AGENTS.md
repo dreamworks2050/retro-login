@@ -51,6 +51,69 @@ All linters pass:
 - PHP: 8/8 checks pass (Syntatis coding standard)
 - JavaScript: No errors (ESLint via wp-scripts)
 
+## Error Handling & Debugging
+
+The plugin includes a comprehensive error handling system with structured logging and error-to-insight pipeline integration.
+
+### Structured Logging
+
+```php
+// Use the Logger for structured logging
+$logger = \Retrologin\Logger::getInstance();
+
+$logger->debug('Debug message', ['key' => 'value']);
+$logger->info('Info message', ['context' => 'test']);
+$logger->warning('Warning message');
+$logger->error('Error message', ['error' => 'details']);
+
+// Access request ID for log correlation
+$requestId = \Retrologin\Logger::getRequestId();
+```
+
+### Error Handler
+
+The ErrorHandler class captures PHP errors, exceptions, and fatal errors:
+
+```php
+use Retrologin\ErrorHandler;
+
+$handler = ErrorHandler::getInstance();
+$handler->init();
+
+// Get error statistics
+$stats = $handler->getStats();
+// ['errors' => 0, 'warnings' => 0, 'request_id' => 'abc123']
+```
+
+### Error-to-Insight Pipeline
+
+The plugin includes an automated error-to-issue pipeline:
+
+1. **Error Detection**: Captures errors, warnings, and exceptions
+2. **Issue Creation**: Automatically creates GitHub issues for critical errors
+3. **Labels**: Applies type:bug, status:needs-triage, priority labels
+4. **Correlation**: Links errors via request_id for distributed tracing
+
+#### GitHub Actions Workflow
+
+The workflow runs hourly to check for new errors:
+
+```bash
+# Manually trigger error check
+gh workflow run error-to-issue.yml
+```
+
+#### Configuration
+
+Set `RETROLOGIN_DEBUG=true` in `.env` to enable verbose error logging.
+
+### Debug Commands
+
+```bash
+# View recent errors
+grep -i "retrologin" wp-content/debug.log
+```
+
 ## Automation Hooks
 
 Configured to auto-run on file changes:
