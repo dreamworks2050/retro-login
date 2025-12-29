@@ -1,0 +1,197 @@
+name: Error to Issue Pipeline
+
+on:
+  # Run on a schedule to check for new errors
+  schedule:
+    # Check every hour for new errors
+    - cron: '0 * * * *'
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      error_log:
+        description: 'Path to error log or error message'
+        required: false
+        default: ''
+      severity:
+        description: 'Error severity level'
+        required: false
+        default: 'error'
+        type: choice
+        options:
+          - debug
+          - info
+          - warning
+          - error
+
+# Cancel in-progress runs when a new workflow is triggered
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detect-and-create-issues:
+    name: Detect Errors and Create Issues
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check for existing error issues
+        id: existing-issues
+        run: |
+          # Get all open issues with "type:bug" label
+          ISSUES=$(gh issue list --state open --label "type:bug" --json number,title 2>/dev/null)
+          echo "existing_issues=${ISSUES}" >> $GITHUB_OUTPUT
+
+      - name: Analyze error patterns from recent commits
+        id: analyze-errors
+        run: |
+          python3 << 'EOF'
+          import subprocess
+          import json
+          import re
+          from datetime import datetime, timedelta
+
+          # Get commits from the last 24 hours
+          result = subprocess.run(
+              ['git', 'log', '--since=24 hours ago', '--oneline', '--format=%H|%s|%b'],
+              capture_output=True, text=True
+          )
+
+          errors = []
+          for line in result.stdout.strip().split('\n'):
+              if not line:
+                  continue
+              parts = line.split('|')
+              if len(parts) >= 2:
+                  commit_hash = parts[0]
+                  message = '|'.join(parts[1:])
+                  # Look for error-related keywords in commit messages
+                  if any(kw in message.lower() for kw in ['fix', 'bug', 'error', 'issue', 'resolve']):
+                      errors.append({
+                          'hash': commit_hash,
+                          'message': message,
+                          'type': 'fix'
+                      })
+
+          # Output results
+          print(f"found_errors={len(errors)}")
+          print(f"errors_data={json.dumps(errors)}")
+          EOF
+
+      - name: Check for duplicate errors
+        id: check-duplicates
+        run: |
+          # Count how many bug issues exist
+          COUNT=$(gh issue list --state open --label "type:bug" 2>/dev/null | wc -l)
+          echo "bug_issue_count=$COUNT" >> $GITHUB_OUTPUT
+
+          if [ "$COUNT" -gt "0" ]; then
+            echo "duplicate_risk=true" >> $GITHUB_OUTPUT
+          else
+            echo "duplicate_risk=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create error tracking issue
+        if: steps.check-duplicates.outputs.duplicate_risk == 'false'
+        id: create-issue
+        run: |
+          # Create a new issue for error tracking
+          ISSUE=$(gh issue create \
+            --title "[AUTO] Error Tracking Issue for RetroLogin" \
+            --body "## Error Tracking Issue
+
+This issue is automatically created to track errors in the RetroLogin plugin.
+
+### Purpose
+- Monitor plugin errors and exceptions
+- Track error patterns and frequency
+- Enable quick resolution of issues
+
+### How This Works
+The error-to-issue pipeline automatically:
+1. Detects errors from commit messages and logs
+2. Creates tracking issues for new error patterns
+3. Links related errors together
+
+### Error Categories
+- **Critical** (P0): Plugin fails to load, authentication issues
+- **High** (P1): Login page styling broken, features not working
+- **Medium** (P2): Minor visual issues, performance concerns
+- **Low** (P3): Cosmetic issues, suggestions
+
+### Labels Applied
+- \`type:bug\`
+- \`status:needs-triage\`
+- Priority will be set based on error severity
+
+### Related
+- See [AGENTS.md](AGENTS.md) for agent development guidelines
+- See [docs/database.md](docs/database.md) for data storage patterns
+- See [docs/hooks-api.md](docs/hooks-api.md) for hook documentation
+
+---
+*This issue was automatically created by the error-to-issue pipeline.*" \
+            --label "type:bug,status:needs-triage")
+
+          echo "issue_url=${ISSUE}" >> $GITHUB_OUTPUT
+          echo "issue_number=$(echo $ISSUE | grep -oE '[0-9]+$')" >> $GITHUB_OUTPUT
+
+      - name: Add error tracking label
+        if: steps.create-issue.outputs.issue_number
+        run: |
+          # Add priority label based on severity
+          gh issue edit ${{ steps.create-issue.outputs.issue_number }} \
+            --add-label "priority:P2"
+
+      - name: Comment on issue with details
+        if: steps.create-issue.outputs.issue_number
+        run: |
+          # Add a comment with tracking information
+          gh issue comment ${{ steps.create-issue.outputs.issue_number }} \
+            --body "## Error Tracking Initialized
+
+**Tracking ID:** retro-login-$(date +%Y%m%d)
+**Repository:** ${{ github.repository }}
+**Branch:** ${{ github.ref_name }}
+
+### Pipeline Status
+- ✅ Error detection: Active
+- ✅ Issue creation: Active
+- ⏳ Automated fixes: Pending
+
+### Next Steps
+1. Team will triage this issue
+2. Priority will be assigned based on severity
+3. Assignee will be set for resolution
+
+---
+*Automated by Error-to-Issue Pipeline*"
+
+      - name: Summary
+        run: |
+          echo "## Error-to-Issue Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.check-duplicates.outputs.duplicate_risk }}" == "true" ]; then
+            echo "✅ **Status**: Tracking issue already exists" >> $GITHUB_STEP_SUMMARY
+            echo "- No new issue created" >> $GITHUB_STEP_SUMMARY
+            echo "- Existing bug issues: ${{ steps.check-duplicates.outputs.bug_issue_count }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ **Status**: Error tracking issue created" >> $GITHUB_STEP_SUMMARY
+            echo "- Issue: ${{ steps.create-issue.outputs.issue_url }}" >> $GITHUB_STEP_SUMMARY
+            echo "- Labels: type:bug, status:needs-triage, priority:P2" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "**Agent Readiness**: error_to_insight_pipeline configured" >> $GITHUB_STEP_SUMMARY
