@@ -6,6 +6,10 @@
 # Install dependencies
 composer install && npm install
 
+# Run tests
+composer test             # PHPUnit unit tests
+composer test:coverage    # Generate HTML coverage report
+
 # Verification (run before commit)
 composer run verify        # PHP linting (Syntatis standard)
 npm run lint:js           # JavaScript linting (ESLint)
@@ -23,11 +27,21 @@ npm run start            # Dev mode with watch
 composer run make-pot    # Generate POT file
 ```
 
+## Environment Setup
+
+For local development:
+1. Copy `.env.example` to `.env`
+2. Update `WP_DEBUG=true` for development mode
+3. Set `RETROLOGIN_DEBUG=false` (or `true` for verbose plugin logging)
+
+See `.env.example` for all available configuration options.
+
 ## Code Verification
 
 Run verification before any commit:
 ```bash
 composer run verify        # PHP linting
+composer run phpstan      # Static analysis (PHPStan level 5)
 npm run lint:js           # JavaScript linting
 npm run format            # Auto-fix JS issues
 composer run format       # Auto-fix PHP issues
