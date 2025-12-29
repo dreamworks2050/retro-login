@@ -1,19 +1,23 @@
 # PHP Conventions
 
 ## Namespacing
-- All classes under `Retrologin\` namespace
-- Follow PSR-4 directory structure: `app/Namespace/Class.php`
+
+-   All classes under `Retrologin\` namespace
+-   Follow PSR-4 directory structure: `app/Namespace/Class.php`
 
 ## Naming
-- Classes: PascalCase (`LoginForm`, `RetroController`)
-- Methods/properties: camelCase
-- Constants: SCREAMING_SNAKE_CASE
-- Hooks: `retrologin_` prefix (`retrologin_login_head`)
+
+-   Classes: PascalCase (`LoginForm`, `RetroController`)
+-   Methods/properties: camelCase
+-   Constants: SCREAMING_SNAKE_CASE
+-   Hooks: `retrologin_` prefix (`retrologin_login_head`)
 
 ## Docblocks
+
 Classes should have a description. Public methods with parameters/return values should be documented. Use `@since` for version tracking.
 
 Example:
+
 ```php
 /**
  * Handles login form display and validation.
@@ -37,13 +41,17 @@ class LoginForm {
 ```
 
 ## Constants
+
 Define in main plugin file or relevant class. Use prefix:
+
 ```php
 const PLUGIN_VERSION = '0.1.0';
 ```
 
 ## ABSPATH Check
+
 Include in files that could be accessed directly:
+
 ```php
 if (! defined('ABSPATH')) {
     exit;
@@ -51,6 +59,7 @@ if (! defined('ABSPATH')) {
 ```
 
 ## Flexibility
-- Multiple small helper classes in one file is OK if closely related
-- Simple utility functions can be namespaced without a class
-- The linter (composer run lint) enforces the Syntatis standard
+
+-   Multiple small helper classes in one file is OK if closely related
+-   Simple utility functions can be namespaced without a class
+-   The linter (composer run lint) enforces the Syntatis standard

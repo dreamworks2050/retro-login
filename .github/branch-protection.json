@@ -1,0 +1,28 @@
+{
+  "name": "Main Branch Protection",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": ["~REF^main"]
+    }
+  },
+  "rules": [
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "checks": [
+          {
+            "context": "CI"
+          }
+        ]
+      }
+    },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 1
+      }
+    }
+  ]
+}

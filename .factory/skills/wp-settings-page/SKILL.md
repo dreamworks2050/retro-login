@@ -64,7 +64,7 @@ function retrologin_sanitize($input): array {
 
 ## Guidelines
 
-- Use single option array for related settings
-- Always sanitize on save
-- Use capabilities check: `manage_options`
-- Store defaults on plugin activation
+-   Use single option array for related settings
+-   Always sanitize on save
+-   Use capabilities check: `manage_options`
+-   Store defaults on plugin activation

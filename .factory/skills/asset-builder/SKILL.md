@@ -16,12 +16,12 @@ When working with CSS/JS assets for the login page:
 
 ## Build Commands
 
-| Command | Purpose |
-|---------|---------|
-| `npm run start` | Watch mode - rebuild on file changes |
-| `npm run build` | Production build - minified assets |
-| `npm run lint:js` | Lint JavaScript |
-| `npm run lint:css` | Lint CSS |
+| Command            | Purpose                              |
+| ------------------ | ------------------------------------ |
+| `npm run start`    | Watch mode - rebuild on file changes |
+| `npm run build`    | Production build - minified assets   |
+| `npm run lint:js`  | Lint JavaScript                      |
+| `npm run lint:css` | Lint CSS                             |
 
 ## Enqueue on Login Page
 
@@ -44,17 +44,17 @@ function retrologin_enqueue_assets(): void {
 
 ## Login Page CSS Selectors
 
-| Element | Selector |
-|---------|----------|
-| Page wrapper | `.login` |
-| Login form | `#loginform` |
-| Logo | `.login h1 a` |
-| Messages | `.login .message` |
+| Element       | Selector            |
+| ------------- | ------------------- |
+| Page wrapper  | `.login`            |
+| Login form    | `#loginform`        |
+| Logo          | `.login h1 a`       |
+| Messages      | `.login .message`   |
 | Submit button | `.wp-submit-button` |
 
 ## Guidelines
 
-- Keep login assets minimal for performance
-- Login page doesn't load theme styles
-- Use CSS variables for retro theming
-- Test assets in browser after building
+-   Keep login assets minimal for performance
+-   Login page doesn't load theme styles
+-   Use CSS variables for retro theming
+-   Test assets in browser after building

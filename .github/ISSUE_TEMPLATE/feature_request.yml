@@ -1,0 +1,61 @@
+---
+name: Feature Request
+description: Suggest a new feature or enhancement for RetroLogin
+labels: ['enhancement', 'feature-request']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for your feature request! Please fill out this form to help us understand your idea.
+
+        ## Quick Checklist
+        - [ ] I have searched for existing issues to avoid duplicates
+        - [ ] This feature is not already planned or implemented
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature Description
+      description: A clear description of the feature you'd like to see.
+      placeholder: 'I would like to add a retro pixel art background option...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Why is this useful?
+      description: Explain the problem this feature solves or the value it adds.
+      placeholder: 'This would help users who want a more authentic 8-bit gaming experience on their login page.'
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: |
+        If you have ideas on how this could be implemented, please describe them.
+        Include any technical considerations if relevant.
+      placeholder: 'Add a new setting in the admin page for selecting background styles.'
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered any alternative approaches?
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any mockups, examples, or references that might help?
+
+  - type: checkboxes
+    id: type
+    attributes:
+      label: Feature Type
+      options:
+        - label: New feature (completely new functionality)
+        - label: Enhancement (improves existing feature)
+        - label: User interface improvement
+        - label: Performance optimization
+        - label: Security improvement
