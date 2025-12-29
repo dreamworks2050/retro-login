@@ -9,72 +9,70 @@
 import apiFetch from '@wordpress/api-fetch';
 import { useEffect, useState } from '@wordpress/element';
 
-const preloaded = await apiFetch( {
+const preloaded = await apiFetch({
 	path: '/wp/v2/settings',
 	method: 'GET',
-} );
+});
 
-const filterValues = ( v ) => {
+const filterValues = (v) => {
 	// Remove any options that are not in the preloaded object.
-	for ( const name in v ) {
-		if ( ! Object.keys( preloaded ).includes( name ) ) {
-			delete v[ name ];
+	for (const name in v) {
+		if (!Object.keys(preloaded).includes(name)) {
+			delete v[name];
 		}
 	}
 
 	return v;
 };
 
-function parseExceptionMessage( errorString ) {
+function parseExceptionMessage(errorString) {
 	const regex = /: \[(.*?)\] (.+) in/;
-	const match = errorString.match( regex );
+	const match = errorString.match(regex);
 
-	if ( match ) {
-		return { [ match[ 1 ] ]: match[ 2 ] };
+	if (match) {
+		return { [match[1]]: match[2] };
 	}
 
 	return null;
 }
 
 export const useSettings = () => {
-	const [ values, setValues ] = useState( preloaded );
-	const [ status, setStatus ] = useState( null );
-	const [ updating, setUpdating ] = useState( false );
-	const [ errorMessages, setErrorMessages ] = useState( {} );
+	const [values, setValues] = useState(preloaded);
+	const [status, setStatus] = useState(null);
+	const [updating, setUpdating] = useState(false);
+	const [errorMessages, setErrorMessages] = useState({});
 
-	useEffect( () => {
-		if ( updating ) {
-			setErrorMessages( {} );
+	useEffect(() => {
+		if (updating) {
+			setErrorMessages({});
 		}
-	}, [ updating ] );
+	}, [updating]);
 
-	const updateValues = ( newValues ) => {
-		setUpdating( true );
-		apiFetch( {
+	const updateValues = (newValues) => {
+		setUpdating(true);
+		apiFetch({
 			path: '/wp/v2/settings',
 			method: 'POST',
 			data: newValues,
-		} )
-			.then( ( response ) => {
-				setValues( filterValues( response ) );
-				setStatus( 'success' );
-			} )
-			.catch( ( response ) => {
-				const errorMessage = parseExceptionMessage(
-					response?.data?.error?.message
-				);
-				setErrorMessages( ( currentErrorMessages ) => {
-					if ( ! errorMessage ) {
+		})
+			.then((response) => {
+				setValues(filterValues(response));
+				setStatus('success');
+			})
+			.catch((response) => {
+				const errorMessage = parseExceptionMessage(response?.data?.error?.message);
+				setErrorMessages((currentErrorMessages) => {
+					if (!errorMessage) {
 						return;
 					}
 
 					return { ...currentErrorMessages, ...errorMessage };
-				} );
-				setStatus( 'error' );
-			} )
-			.finally( () => {
-				setUpdating( false );
-			} );
+				});
+				setStatus('error');
+			})
+			.finally(() => {
+				setUpdating(false);
+			});
 	};
 
 	return {
@@ -82,14 +80,14 @@ export const useSettings = () => {
 		status,
 		updating,
 		errorMessages,
-		updateValues( formData ) {
+		updateValues(formData) {
 			const newValues = {};
-			for ( const entry of formData.entries() ) {
-				if ( Object.keys( preloaded ).includes( entry[ 0 ] ) ) {
-					newValues[ entry[ 0 ] ] = entry[ 1 ];
+			for (const entry of formData.entries()) {
+				if (Object.keys(preloaded).includes(entry[0])) {
+					newValues[entry[0]] = entry[1];
 				}
 			}
-			updateValues( newValues );
+			updateValues(newValues);
 		},
 		updateStatus: setStatus,
 	};

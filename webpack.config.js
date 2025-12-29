@@ -1,8 +1,8 @@
-const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
-const path = require( 'path' );
+const defaultConfig = require('@wordpress/scripts/config/webpack.config');
+const path = require('path');
 // eslint-disable-next-line import/no-extraneous-dependencies
-const glob = require( 'glob' );
-const fs = require( 'fs' );
+const glob = require('glob');
+const fs = require('fs');
 
 /**
  * Generates an object of file entries based on the provided paths.
@@ -10,27 +10,24 @@ const fs = require( 'fs' );
  * @param {string[]} paths - An array of file paths.
  * @return {Object} - An object containing file entries.
  */
-const fileEntries = ( paths ) => {
+const fileEntries = (paths) => {
 	const entries = {};
-	paths.forEach( function ( dirPath ) {
+	paths.forEach(function (dirPath) {
 		const name = dirPath
-			.split( '/' )
-			.filter( ( value ) => value !== '.' && value !== 'src' )
-			.join( '/' );
+			.split('/')
+			.filter((value) => value !== '.' && value !== 'src')
+			.join('/');
 
-		if ( ! name.startsWith( '_' ) ) {
-			const indexFile = [ 'index.tsx', 'index.ts', 'index.js' ]
-				.map( ( fileName ) => path.join( dirPath, fileName ) )
-				.find( ( filePath ) => fs.existsSync( filePath ) );
+		if (!name.startsWith('_')) {
+			const indexFile = ['index.tsx', 'index.ts', 'index.js']
+				.map((fileName) => path.join(dirPath, fileName))
+				.find((filePath) => fs.existsSync(filePath));
 
-			if ( indexFile ) {
-				entries[ `${ name }/index` ] = path.resolve(
-					process.cwd(),
-					indexFile
-				);
+			if (indexFile) {
+				entries[`${name}/index`] = path.resolve(process.cwd(), indexFile);
 			}
 		}
-	} );
+	});
 	return entries;
 };
 
@@ -38,6 +35,6 @@ module.exports = {
 	...defaultConfig,
 	entry: {
 		...defaultConfig.entry(),
-		...fileEntries( glob.sync( './src/*' ) ),
+		...fileEntries(glob.sync('./src/*')),
 	},
 };
