@@ -21,15 +21,18 @@ When releasing a new version:
 ## 0.1.0 - 2025-12-29
 
 ### Added
-- Initial release with retro login page
-- Custom login page styling
-- Login redirect functionality
+
+-   Initial release with retro login page
+-   Custom login page styling
+-   Login redirect functionality
 
 ### Changed
-- Updated Howdy boilerplate structure
+
+-   Updated Howdy boilerplate structure
 
 ### Fixed
-- Security: ABSPATH check added to all files
+
+-   Security: ABSPATH check added to all files
 ```
 
 ## Generate Log Command
@@ -48,6 +51,7 @@ git log --oneline -20
 ## Version Update
 
 Update in `retrologin.php`:
+
 ```php
 const PLUGIN_VERSION = '0.1.0';
 ```
@@ -67,7 +71,7 @@ git tag -l
 
 ## Guidelines
 
-- Follow Semantic Versioning (MAJOR.MINOR.PATCH)
-- Keep changelog in readme.txt or CHANGELOG.md
-- Tag before publishing to WordPress.org
-- Test after version bump
+-   Follow Semantic Versioning (MAJOR.MINOR.PATCH)
+-   Keep changelog in readme.txt or CHANGELOG.md
+-   Tag before publishing to WordPress.org
+-   Test after version bump

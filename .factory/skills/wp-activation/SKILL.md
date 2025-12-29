@@ -27,11 +27,11 @@ function retrologin_activate(): void {
         'font' => 'Press Start 2P',
         'enabled' => true,
     ];
-    
+
     if (! get_option('retrologin_settings')) {
         add_option('retrologin_settings', $defaults);
     }
-    
+
     // Flush rewrite rules if needed
     flush_rewrite_rules();
 }
@@ -45,7 +45,7 @@ register_deactivation_hook(retrologin_plugin_file(), 'retrologin_deactivate');
 function retrologin_deactivate(): void {
     // Clear scheduled events
     wp_clear_scheduled_hook('retrologin_daily_task');
-    
+
     // Optionally: Remove options
     // delete_option('retrologin_settings');
 }
@@ -69,7 +69,7 @@ delete_metadata('user', '', '_retrologin_preferences', '', true);
 
 ## Guidelines
 
-- Keep callbacks in `inc/` directory
-- Don't output anything in activation
-- Handle multi-site activation if needed
-- Test activation on fresh install
+-   Keep callbacks in `inc/` directory
+-   Don't output anything in activation
+-   Handle multi-site activation if needed
+-   Test activation on fresh install

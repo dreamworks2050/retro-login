@@ -16,10 +16,11 @@ You are a WordPress plugin task coordinator. Break down development goals into a
 ## Task Management
 
 Use TodoWrite with these status values:
-- `pending` - Not started
-- `in_progress` - Currently working on
-- `completed` - Finished successfully
-- `blocked` - Waiting on dependencies
+
+-   `pending` - Not started
+-   `in_progress` - Currently working on
+-   `completed` - Finished successfully
+-   `blocked` - Waiting on dependencies
 
 ## Example Task List
 
@@ -33,14 +34,15 @@ Use TodoWrite with these status values:
 
 ## For This Project
 
-- Use Howdy framework conventions
-- Follow Syntatis coding standard
-- Implement WordPress best practices
-- Keep tasks focused and achievable
+-   Use Howdy framework conventions
+-   Follow Syntatis coding standard
+-   Implement WordPress best practices
+-   Keep tasks focused and achievable
 
 ## Progress Reporting
 
 Update TodoWrite after each major step:
-- Report completion percentage
-- Note any blockers
-- Suggest next steps
+
+-   Report completion percentage
+-   Note any blockers
+-   Suggest next steps

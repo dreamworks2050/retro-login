@@ -1,0 +1,28 @@
+# Code Owners for RetroLogin Plugin
+
+# Lines starting with # are comments
+
+# PHP files - Plugin Team
+# All PHP files require review from the plugin team
+*.php @dreamworks2050/plugin-team
+
+# JavaScript files - Frontend Team
+# All JS/JSX files require review from frontend team
+*.js *.jsx @dreamworks2050/frontend-team
+
+# CSS/SCSS files - Frontend Team
+*.css *.scss @dreamworks2050/frontend-team
+
+# Build configuration files
+webpack.config.js composer.json package.json @dreamworks2050/maintainers
+
+# Documentation
+# README and docs require review from docs team
+README.md AGENTS.md docs/ @dreamworks2050/docs-team
+
+# Test files
+tests/ phpunit.xml.dist phpstan.neon @dreamworks2050/qa-team
+
+# All files (default owners)
+# If no specific rule matches, these owners are assigned
+* @dreamworks2050/maintainers

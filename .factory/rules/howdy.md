@@ -1,6 +1,7 @@
 # Howdy Framework Structure
 
 ## Directory Layout
+
 ```
 retrologin/
 ├── app/                 # PSR-4 classes (Retrologin\ namespace)
@@ -12,11 +13,13 @@ retrologin/
 ```
 
 ## Autoloading
-- Composer maps `Retrologin\` to `app/` directory
-- Example: `app/Admin/Login.php` → `Retrologin\Admin\Login`
-- Rely on autoloading; don't manually require files
+
+-   Composer maps `Retrologin\` to `app/` directory
+-   Example: `app/Admin/Login.php` → `Retrologin\Admin\Login`
+-   Rely on autoloading; don't manually require files
 
 ## Build Commands
+
 ```bash
 npm run start    # Watch and rebuild assets during dev
 npm run build    # Production build (minified)
@@ -26,17 +29,21 @@ composer scope       # Scope dependencies for production
 ```
 
 ## Dependencies
-- PHP-Scoper prefixes vendor namespaces as `Retrologin\Vendor`
-- Prevents conflicts with other plugins using same libraries
-- Scoped output: `dist/autoload/`
+
+-   PHP-Scoper prefixes vendor namespaces as `Retrologin\Vendor`
+-   Prevents conflicts with other plugins using same libraries
+-   Scoped output: `dist/autoload/`
 
 ## WordPress Compatibility
-- Supports WordPress 6.0+
-- PHP 7.4 minimum, 8.0+ recommended
-- Syntatis coding standard enforced via phpcs.xml.dist
+
+-   Supports WordPress 6.0+
+-   PHP 7.4 minimum, 8.0+ recommended
+-   Syntatis coding standard enforced via phpcs.xml.dist
 
 ## File Header Pattern
+
 Each PHP file should start with:
+
 ```php
 <?php
 

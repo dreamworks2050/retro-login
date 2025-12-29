@@ -16,47 +16,47 @@ When creating retro login page styles:
 
 ## Retro Style Elements
 
-| Element | CSS Selector | Notes |
-|---------|--------------|-------|
-| Page wrapper | `.login` | Main container |
-| Login form | `#loginform` | Form element |
-| Logo area | `.login h1 a` | WordPress logo |
-| Error box | `.login .message` | Info/error messages |
-| Submit button | `.wp-submit-button` | Login button |
-| Footer | `.login footer` | Footer area |
+| Element       | CSS Selector        | Notes               |
+| ------------- | ------------------- | ------------------- |
+| Page wrapper  | `.login`            | Main container      |
+| Login form    | `#loginform`        | Form element        |
+| Logo area     | `.login h1 a`       | WordPress logo      |
+| Error box     | `.login .message`   | Info/error messages |
+| Submit button | `.wp-submit-button` | Login button        |
+| Footer        | `.login footer`     | Footer area         |
 
 ## Example Pattern
 
 ```css
 :root {
-    --retro-bg: #2d1b4e;
-    --retro-primary: #ff6b9d;
-    --retro-text: #c8d6e5;
-    --retro-font: 'Press Start 2P', monospace;
+	--retro-bg: #2d1b4e;
+	--retro-primary: #ff6b9d;
+	--retro-text: #c8d6e5;
+	--retro-font: 'Press Start 2P', monospace;
 }
 
 .login {
-    background: var(--retro-bg);
-    font-family: var(--retro-font);
+	background: var(--retro-bg);
+	font-family: var(--retro-font);
 }
 
 #loginform {
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid var(--retro-primary);
-    border-radius: 4px;
+	background: rgba(255, 255, 255, 0.05);
+	border: 2px solid var(--retro-primary);
+	border-radius: 4px;
 }
 
 .wp-submit-button {
-    background: var(--retro-primary);
-    color: var(--retro-bg);
-    border: none;
+	background: var(--retro-primary);
+	color: var(--retro-bg);
+	border: none;
 }
 ```
 
 ## Guidelines
 
-- Define colors as `:root` variables for easy theming
-- Test contrast ratios for accessibility
-- Use subtle animations (scanlines, glow)
-- Don't modify core WordPress functionality
-- Keep CSS minimal - login page should load fast
+-   Define colors as `:root` variables for easy theming
+-   Test contrast ratios for accessibility
+-   Use subtle animations (scanlines, glow)
+-   Don't modify core WordPress functionality
+-   Keep CSS minimal - login page should load fast

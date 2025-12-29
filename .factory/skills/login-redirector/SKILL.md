@@ -68,7 +68,7 @@ function retrologin_logout_redirect(string $redirect_to, string $requested_redir
 
 ## Guidelines
 
-- Always check if `$user` is a valid WP_User
-- Handle WP_Error cases (failed login)
-- Return `$redirect_to` as fallback
-- Test redirects with different user roles
+-   Always check if `$user` is a valid WP_User
+-   Handle WP_Error cases (failed login)
+-   Return `$redirect_to` as fallback
+-   Test redirects with different user roles

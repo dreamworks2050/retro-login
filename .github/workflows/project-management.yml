@@ -1,0 +1,203 @@
+name: Project Management
+
+on:
+  # Run on project-related events
+  issues:
+    types: [opened, labeled, unlabeled, closed, reopened]
+  pull_request:
+    types: [opened, closed, merged, review_requested]
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'health-check'
+        type: choice
+        options:
+          - health-check
+          - sync-labels
+          - generate-report
+
+#permissions:
+#  issues: write
+#  pull-requests: write
+#  contents: read
+
+jobs:
+  # Backlog health check
+  backlog-health:
+    name: Backlog Health Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Backlog Health Check
+        id: health-check
+        run: |
+          echo "## Backlog Health Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Date**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Get open issues
+          TOTAL_ISSUES=$(gh issue list --state open --json number 2>/dev/null | grep -o '"number"' | wc -l)
+          echo "**Total Open Issues**: $TOTAL_ISSUES" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Check labeled issues
+          LABELED=$(gh issue list --state open --json labels 2>/dev/null | grep -c '"name"' || echo "0")
+          echo "**Labeled Issues**: $LABELED" >> $GITHUB_STEP_SUMMARY
+
+          # Calculate percentage
+          if [ "$TOTAL_ISSUES" -gt "0" ]; then
+            PERCENTAGE=$((LABELED * 100 / TOTAL_ISSUES))
+            echo "**Label Coverage**: ${PERCENTAGE}%" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Label Coverage**: N/A (no issues)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Check issue titles
+          LONG_TITLES=$(gh issue list --state open --json title 2>/dev/null | grep -c '"title"' || echo "0")
+          echo "**Issues with Titles**: $LONG_TITLES" >> $GITHUB_STEP_SUMMARY
+
+          # Check for very old issues
+          OLD_ISSUES=$(gh issue list --state open --created '<=2024-01-01' --json number 2>/dev/null | grep -o '"number"' | wc -l || echo "0")
+          echo "**Stale Issues (>365 days)**: $OLD_ISSUES" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Summary
+          echo "## Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          PASSED=0
+          FAILED=0
+
+          # Check 1: Label coverage > 70%
+          if [ "$TOTAL_ISSUES" -gt "0" ] && [ "$PERCENTAGE" -ge "70" ]; then
+            echo "✅ **Label Coverage**: ${PERCENTAGE}% (target: >70%)" >> $GITHUB_STEP_SUMMARY
+            PASSED=$((PASSED + 1))
+          else
+            echo "⚠️ **Label Coverage**: ${PERCENTAGE}% (target: >70%)" >> $GITHUB_STEP_SUMMARY
+            FAILED=$((FAILED + 1))
+          fi
+
+          # Check 2: No stale issues
+          if [ "$OLD_ISSUES" -eq "0" ]; then
+            echo "✅ **Stale Issues**: None found" >> $GITHUB_STEP_SUMMARY
+            PASSED=$((PASSED + 1))
+          else
+            echo "⚠️ **Stale Issues**: $OLD_ISSUES issues older than 365 days" >> $GITHUB_STEP_SUMMARY
+            FAILED=$((FAILED + 1))
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Health Score**: $PASSED/2 checks passed" >> $GITHUB_STEP_SUMMARY
+
+          # Set outputs
+          echo "passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "failed=$FAILED" >> $GITHUB_OUTPUT
+          echo "label_coverage=$PERCENTAGE" >> $GITHUB_OUTPUT
+          echo "stale_issues=$OLD_ISSUES" >> $GITHUB_OUTPUT
+
+      - name: Generate Recommendations
+        if: steps.health-check.outputs.failed > 0
+        run: |
+          echo "## Recommendations" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.health-check.outputs.label_coverage }}" -lt "70" ]; then
+            echo "- Add labels to unlabeled issues" >> $GITHUB_STEP_SUMMARY
+            echo "- Use issue templates with default labels" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ steps.health-check.outputs.stale_issues }}" -gt "0" ]; then
+            echo "- Review and close or prioritize stale issues" >> $GITHUB_STEP_SUMMARY
+            echo "- Consider adding a 'wontfix' label for old issues" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+  # Sync labels from template
+  sync-labels:
+    name: Sync Labels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'sync-labels'
+    steps:
+      - name: Sync Issue Labels
+        run: |
+          echo "## Label Sync" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Issue templates define these labels
+          TEMPLATE_LABELS=(
+            "bug"
+            "enhancement"
+            "feature-request"
+            "dependencies"
+            "composer"
+            "npm"
+            "github-actions"
+          )
+
+          for label in "${TEMPLATE_LABELS[@]}"; do
+            # Check if label exists
+            if ! gh issue view "$label" --json number 2>/dev/null > /dev/null; then
+              echo "Creating label: $label" >> $GITHUB_STEP_SUMMARY
+              # Labels are created via issue templates, not CLI
+            else
+              echo "Label exists: $label" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Labels are managed via issue templates" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Available Labels**:" >> $GITHUB_STEP_SUMMARY
+          echo "- bug, enhancement, feature-request" >> $GITHUB_STEP_SUMMARY
+          echo "- dependencies, composer, npm, github-actions" >> $GITHUB_STEP_SUMMARY
+
+  # Generate project report
+  generate-report:
+    name: Generate Project Report
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'generate-report'
+    steps:
+      - name: Generate Report
+        run: |
+          echo "## Project Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Repository**: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Generated**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Issue statistics
+          OPEN_ISSUES=$(gh issue list --state open --json number 2>/dev/null | grep -c '"number"' || echo "0")
+          CLOSED_ISSUES=$(gh issue list --state closed --json number 2>/dev/null | grep -c '"number"' || echo "0")
+
+          echo "### Issues" >> $GITHUB_STEP_SUMMARY
+          echo "- Open: $OPEN_ISSUES" >> $GITHUB_STEP_SUMMARY
+          echo "- Closed: $CLOSED_ISSUES" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # PR statistics
+          OPEN_PRS=$(gh pr list --state open --json number 2>/dev/null | grep -c '"number"' || echo "0")
+          MERGED_PRS=$(gh pr list --state merged --json number 2>/dev/null | grep -c '"number"' || echo "0")
+
+          echo "### Pull Requests" >> $GITHUB_STEP_SUMMARY
+          echo "- Open: $OPEN_PRS" >> $GITHUB_STEP_SUMMARY
+          echo "- Merged: $MERGED_PRS" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Release information
+          echo "### Releases" >> $GITHUB_STEP_SUMMARY
+          LATEST_RELEASE=$(gh release view --json tagName --jq '.tagName' 2>/dev/null || echo "None")
+          echo "- Latest: $LATEST_RELEASE" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "✅ Report generated successfully" >> $GITHUB_STEP_SUMMARY

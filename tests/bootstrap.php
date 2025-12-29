@@ -70,4 +70,16 @@ if (!function_exists('sanitize_text_field')) {
 	}
 }
 
+if (!function_exists('current_time')) {
+	function current_time($type, $gmt = false) {
+		return date('Y-m-d H:i:s');
+	}
+}
+
+if (!function_exists('wp_json_encode')) {
+	function wp_json_encode($data, $options = 0, $depth = 512) {
+		return json_encode($data, $options, $depth);
+	}
+}
+
 echo "PHPUnit Bootstrap Loaded\n";
